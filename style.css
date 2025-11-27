@@ -333,3 +333,27 @@ tbody tr:hover {
     align-self: flex-end;
   }
 }
+/* ============================
+   IMPRESIÓN SOLO FICHA
+============================ */
+@media print {
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  #ficha-panel, #ficha-panel * {
+    visibility: visible !important;
+  }
+
+  #ficha-panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
