@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Migratorio – Análisis</title>
+
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#007639" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Leaflet para mapas -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <h1>Migratorio – Análisis</h1>
+      <p>Registro interno de personas, eventos y direcciones</p>
+    </div>
+    <div class="badge">OS9 · Unidad de Análisis</div>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab-button active" data-tab="personas">Personas</button>
+    <button class="tab-button" data-tab="eventos">Eventos</button>
+    <button class="tab-button" data-tab="direcciones">Direcciones</button>
+    <button class="tab-button" data-tab="mapa">Mapa</button>
+    <button class="tab-button" data-tab="exportar">Exportar / Importar</button>
+  </nav>
+
+  <main class="tab-container">
+
+    <!-- PERSONAS -->
+    <section id="tab-personas" class="tab active">
+      <div class="panel">
+        <h2>Registrar persona</h2>
+        <form id="persona-form" class="form-grid">
+          <div class="form-group">
+            <label>Nombre completo</label>
+            <input type="text" id="p-nombre" required />
+          </div>
+          <div class="form-group">
+            <label>Alias / apodo</label>
+            <input type="text" id="p-alias" />
+          </div>
+          <div class="form-group">
+            <label>Nacionalidad</label>
+            <input type="text" id="p-nacionalidad" />
+          </div>
+          <div class="form-group">
+            <label>Fecha de nacimiento</label>
+            <input type="date" id="p-fecha-nac" />
+          </div>
+          <div class="form-group">
+            <label>Documento (RUT, NIE, pasaporte)</label>
+            <input type="text" id="p-documento" />
+          </div>
+          <div class="form-group">
+            <label>Estado migratorio</label>
+            <select id="p-estado">
+              <option value="">-- Seleccionar --</option>
+              <option>Regular</option>
+              <option>Irregular</option>
+              <option>En trámite</option>
+              <option>Refugio</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fecha de ingreso al país</label>
+            <input type="date" id="p-fecha-ingreso" />
+          </div>
+          <div class="form-group">
+            <label>Tipo de ingreso</label>
+            <select id="p-tipo-ingreso">
+              <option value="">-- Seleccionar --</option>
+              <option>Frontera habilitada</option>
+              <option>Paso no habilitado</option>
+              <option>Aeropuerto</option>
+              <option>Desconocido</option>
+            </select>
+          </div>
+          <div class="form-group full-row">
+            <label>Domicilio declarado</label>
+            <input type="text" id="p-domicilio" />
+          </div>
+          <div class="form-group">
+            <label>Vinculado a delito</label>
+            <select id="p-delito">
+              <option value="">No</option>
+              <option>Sí</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Orden de expulsión</label>
+            <select id="p-orden-exp">
+              <option value="">No</option>
+              <option>Sí</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Expulsión ejecutada</label>
+            <select id="p-exp-ejecutada">
+              <option value="">No</option>
+              <option>Sí</option>
+            </select>
+          </div>
+          <div class="form-group full-row">
+            <label>CODIGOS MIG</label>
+            <div class="chips-container" id="p-mig-codes">
+              <!-- Se llenan desde JS -->
+            </div>
+          </div>
+          <div class="form-group full-row">
+            <label>Observaciones</label>
+            <textarea id="p-observaciones" rows="3"></textarea>
+          </div>
+          <div class="form-actions full-row">
+            <button type="submit" class="btn-primary">Guardar persona</button>
+            <button type="reset" class="btn-secondary" id="persona-reset-btn">
+              Limpiar
+            </button>
+          </div>
+          <input type="hidden" id="p-id-edit" />
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Personas registradas</h2>
+          <div class="filters">
+            <input
+              type="text"
+              id="persona-buscar"
+              placeholder="Buscar por nombre, documento o nacionalidad..."
+            />
+            <select id="persona-filtro-mig">
+              <option value="">MIG: todos</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table id="personas-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Nacionalidad</th>
+                <th>Estado</th>
+                <th>MIG</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel" id="ficha-panel" style="display:none;">
+        <div class="panel-header">
+          <h2>Ficha de persona</h2>
+          <button class="btn-secondary" id="cerrar-ficha-btn">Cerrar</button>
+        </div>
+        <div id="ficha-contenido"></div>
+        <div class="form-actions">
+          <button class="btn-primary" id="ficha-imprimir-btn">
+            Imprimir / Guardar como PDF
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- EVENTOS -->
+    <section id="tab-eventos" class="tab">
+      <div class="panel">
+        <h2>Registrar evento</h2>
+        <form id="evento-form" class="form-grid">
+          <div class="form-group">
+            <label>Persona (ID)</label>
+            <select id="e-persona-id" required>
+              <option value="">-- Seleccionar persona --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Fecha del evento</label>
+            <input type="date" id="e-fecha" required />
+          </div>
+          <div class="form-group">
+            <label>Tipo de evento</label>
+            <select id="e-tipo">
+              <option value="">-- Seleccionar --</option>
+              <option>Control preventivo</option>
+              <option>Control investigativo</option>
+              <option>Detención</option>
+              <option>Allanamiento</option>
+              <option>Entrevista</option>
+              <option>Coordinación Fiscalía</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Unidad ejecutora</label>
+            <input type="text" id="e-unidad" placeholder="Ej. OS9, SIP, SEBV..." />
+          </div>
+          <div class="form-group full-row">
+            <label>Evidencia asociada (parte, RUC, etc.)</label>
+            <input type="text" id="e-evidencia" />
+          </div>
+          <div class="form-group full-row">
+            <label>Observaciones</label>
+            <textarea id="e-observaciones" rows="3"></textarea>
+          </div>
+          <div class="form-actions full-row">
+            <button type="submit" class="btn-primary">Guardar evento</button>
+            <button type="reset" class="btn-secondary">Limpiar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Eventos registrados</h2>
+          <input
+            type="text"
+            id="evento-buscar"
+            placeholder="Buscar por persona, tipo, unidad o evidencia..."
+          />
+        </div>
+        <div class="table-wrapper">
+          <table id="eventos-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Persona ID</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Unidad</th>
+                <th>Evidencia</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- DIRECCIONES -->
+    <section id="tab-direcciones" class="tab">
+      <div class="panel">
+        <h2>Registrar dirección</h2>
+        <form id="direccion-form" class="form-grid">
+          <div class="form-group">
+            <label>Persona (ID)</label>
+            <select id="d-persona-id">
+              <option value="">-- Seleccionar persona --</option>
+            </select>
+          </div>
+          <div class="form-group full-row">
+            <label>Dirección</label>
+            <input type="text" id="d-direccion" placeholder="Calle, número, comuna..." />
+          </div>
+          <div class="form-group">
+            <label>Tipo de punto</label>
+            <select id="d-tipo">
+              <option value="">-- Seleccionar --</option>
+              <option>Domicilio declarado</option>
+              <option>Domicilio real</option>
+              <option>Lugar de trabajo</option>
+              <option>Lugar de reunión</option>
+              <option>Punto de detención</option>
+              <option>Otro</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Latitud</label>
+            <input type="number" step="0.000001" id="d-lat" placeholder="-33.4..." />
+          </div>
+          <div class="form-group">
+            <label>Longitud</label>
+            <input type="number" step="0.000001" id="d-lng" placeholder="-70.6..." />
+          </div>
+          <div class="form-group full-row">
+            <label>Observaciones</label>
+            <textarea id="d-observaciones" rows="2"></textarea>
+          </div>
+          <div class="form-actions full-row">
+            <button type="submit" class="btn-primary">Guardar dirección</button>
+            <button type="reset" class="btn-secondary">Limpiar</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Direcciones registradas</h2>
+          <input
+            type="text"
+            id="direccion-buscar"
+            placeholder="Buscar por persona, dirección o tipo..."
+          />
+        </div>
+        <div class="table-wrapper">
+          <table id="direcciones-table">
+            <thead>
+              <tr>
+                <th>Persona ID</th>
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Tipo</th>
+                <th>Lat</th>
+                <th>Lng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- MAPA -->
+    <section id="tab-mapa" class="tab">
+      <div class="panel">
+        <div class="panel-header">
+          <h2>Mapa de direcciones vinculadas</h2>
+          <button class="btn-primary" id="mapa-actualizar-btn">
+            Actualizar marcadores
+          </button>
+        </div>
+        <div id="map" class="map-container"></div>
+        <p class="info-text">
+          Usa este mapa para visualizar domicilios, lugares de reunión y puntos relevantes.
+        </p>
+      </div>
+    </section>
+
+    <!-- EXPORTAR / IMPORTAR -->
+    <section id="tab-exportar" class="tab">
+      <div class="panel">
+        <h2>Backup de base de datos</h2>
+        <p>
+          Aquí puedes exportar toda la base (personas, eventos, direcciones) a un archivo
+          <strong>.json</strong> e importarla en otro equipo de la oficina.
+        </p>
+        <div class="form-actions">
+          <button class="btn-primary" id="exportar-json-btn">
+            Exportar base de datos (.json)
+          </button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Importar base de datos</h2>
+        <p>
+          Selecciona un archivo <strong>.json</strong> generado por esta misma aplicación.
+          <br />
+          <strong>Cuidado:</strong> la importación sobrescribirá la base actual.
+        </p>
+        <input type="file" id="importar-json-input" accept="application/json" />
+        <div class="form-actions">
+          <button class="btn-secondary" id="importar-json-btn">
+            Importar base de datos
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="app-footer">
+    <span>Migratorio – Análisis · Uso interno</span>
+    <span>v1.0</span>
+  </footer>
+
+  <script src="app.js"></script>
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker.register("service-worker.js").catch(console.error);
+      });
+    }
+  </script>
+</body>
+</html>
