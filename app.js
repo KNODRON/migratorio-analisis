@@ -65,6 +65,23 @@ document.addEventListener("DOMContentLoaded", () => {
   setupExportImport();
   setupFicha();
   setupMapa();
+  
+  document.addEventListener("paste", async (e) => {
+  const items = e.clipboardData.items;
+  for (const item of items) {
+    if (item.type.indexOf("image") !== -1) {
+      const blob = item.getAsFile();
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const base64 = event.target.result;
+        document.getElementById("p-foto-base64").value = base64;
+
+        const preview = document.getElementById("foto-preview");
+        preview.innerHTML = `<img src="${base64}" />`;
+      };
+      reader.readAsDataURL(blob);
+    }
+  }
 });
 
 // --- Tabs ---
