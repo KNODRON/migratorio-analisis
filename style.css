@@ -357,3 +357,24 @@ tbody tr:hover {
     border: none !important;
   }
 }
+.foto-preview {
+  width: 160px;
+  height: 160px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #f9fafb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #888;
+  overflow: hidden;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.foto-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
