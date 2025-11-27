@@ -83,6 +83,30 @@ function setupTabs() {
     });
   });
 }
+function setupTabs() {
+  const buttons = document.querySelectorAll(".tab-button");
+  const tabs = document.querySelectorAll(".tab");
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      buttons.forEach((b) => b.classList.remove("active"));
+      tabs.forEach((t) => t.classList.remove("active"));
+
+      btn.classList.add("active");
+      const tabId = btn.dataset.tab;
+      const tabEl = document.getElementById(`tab-${tabId}`);
+      tabEl.classList.add("active");
+
+      // 🟢 FIX: Redibujar mapa si se abre el tab MAPA
+      if (tabId === "mapa" && typeof map !== "undefined") {
+        setTimeout(() => {
+          map.invalidateSize();
+        }, 200);
+      }
+    });
+  });
+}
+
 
 // --- MIG Chips ---
 function setupMIGChips() {
